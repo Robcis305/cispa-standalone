@@ -1,8 +1,10 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,10 @@ export default function LoginPage() {
       
       // Demo credentials for testing
       if (email === 'advisor@test.com' && password === 'testpassword123') {
-        setMessage('Login successful! Dashboard coming soon...');
+        setMessage('Login successful! Redirecting to dashboard...');
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1000);
       } else {
         setMessage('Demo credentials: advisor@test.com / testpassword123');
       }
