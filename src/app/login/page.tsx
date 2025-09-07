@@ -28,7 +28,7 @@ export default function LoginPage() {
       } else {
         setMessage('Demo credentials: advisor@test.com / testpassword123');
       }
-    } catch (error) {
+    } catch {
       setMessage('Login failed. Please try again.');
     } finally {
       setLoading(false);

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -11,13 +11,21 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { supabase } from '@/lib/supabase';
-import { Assessment, Question, Answer } from '@/types/database.types';
+import { Assessment } from '@/types/database.types';
 
 interface DimensionScore {
   dimension: string;
   score: number;
   questions: number;
   maxScore: number;
+}
+
+interface Recommendation {
+  priority: 'high' | 'medium';
+  dimension: string;
+  title: string;
+  description: string;
+  actions: string[];
 }
 
 export default function AssessmentResultsPage() {
@@ -31,9 +39,10 @@ export default function AssessmentResultsPage() {
 
   useEffect(() => {
     loadResults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessmentId]);
 
-  const loadResults = async () => {
+  const loadResults = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -83,15 +92,15 @@ export default function AssessmentResultsPage() {
       });
 
       setDimensionBreakdown(breakdown);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, [assessmentId]);
 
   const generateRecommendations = (dimensionScores: DimensionScore[]) => {
-    const recommendations = [];
+    const recommendations: Recommendation[] = [];
     
     dimensionScores.forEach(dim => {
       if (dim.score < 40) {

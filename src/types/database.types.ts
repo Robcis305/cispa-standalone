@@ -41,11 +41,11 @@ export interface Database {
           dimension: 'financial' | 'operational' | 'market' | 'technology' | 'legal' | 'strategic'
           module: 'core' | 'marketing' | 'technology' | 'human_capital' | 'investor'
           order_index: number
-          branching_conditions: any
+          branching_conditions: Record<string, unknown> | null
           weight: number
           scoring_impact: number
-          options: any[]
-          validation_rules: any
+          options: QuestionOption[]
+          validation_rules: Record<string, unknown> | null
           help_text: string | null
           is_required: boolean
           is_active: boolean
@@ -59,11 +59,11 @@ export interface Database {
           dimension: 'financial' | 'operational' | 'market' | 'technology' | 'legal' | 'strategic'
           module?: 'core' | 'marketing' | 'technology' | 'human_capital' | 'investor'
           order_index?: number
-          branching_conditions?: any
+          branching_conditions?: Record<string, unknown> | null
           weight?: number
           scoring_impact?: number
-          options?: any[]
-          validation_rules?: any
+          options?: QuestionOption[]
+          validation_rules?: Record<string, unknown> | null
           help_text?: string | null
           is_required?: boolean
           is_active?: boolean
@@ -77,11 +77,11 @@ export interface Database {
           dimension?: 'financial' | 'operational' | 'market' | 'technology' | 'legal' | 'strategic'
           module?: 'core' | 'marketing' | 'technology' | 'human_capital' | 'investor'
           order_index?: number
-          branching_conditions?: any
+          branching_conditions?: Record<string, unknown> | null
           weight?: number
           scoring_impact?: number
-          options?: any[]
-          validation_rules?: any
+          options?: QuestionOption[]
+          validation_rules?: Record<string, unknown> | null
           help_text?: string | null
           is_required?: boolean
           is_active?: boolean
@@ -106,8 +106,8 @@ export interface Database {
           time_to_completion: string | null
           current_question_id: string | null
           overall_readiness_score: number | null
-          dimension_scores: any
-          recommendations: any[]
+          dimension_scores: Record<string, number> | null
+          recommendations: Record<string, unknown>[]
           progress_percentage: number
           created_at: string
           updated_at: string
@@ -128,8 +128,8 @@ export interface Database {
           time_to_completion?: string | null
           current_question_id?: string | null
           overall_readiness_score?: number | null
-          dimension_scores?: any
-          recommendations?: any[]
+          dimension_scores?: Record<string, number> | null
+          recommendations?: Record<string, unknown>[]
           progress_percentage?: number
           created_at?: string
           updated_at?: string
@@ -150,8 +150,8 @@ export interface Database {
           time_to_completion?: string | null
           current_question_id?: string | null
           overall_readiness_score?: number | null
-          dimension_scores?: any
-          recommendations?: any[]
+          dimension_scores?: Record<string, number> | null
+          recommendations?: Record<string, unknown>[]
           progress_percentage?: number
           created_at?: string
           updated_at?: string
@@ -163,7 +163,7 @@ export interface Database {
           assessment_id: string
           question_id: string
           answer_value: string
-          answer_metadata: any
+          answer_metadata: Record<string, unknown> | null
           score_impact: number | null
           created_at: string
           updated_at: string
@@ -174,7 +174,7 @@ export interface Database {
           assessment_id: string
           question_id: string
           answer_value: string
-          answer_metadata?: any
+          answer_metadata?: Record<string, unknown> | null
           score_impact?: number | null
           created_at?: string
           updated_at?: string
@@ -185,7 +185,7 @@ export interface Database {
           assessment_id?: string
           question_id?: string
           answer_value?: string
-          answer_metadata?: any
+          answer_metadata?: Record<string, unknown> | null
           score_impact?: number | null
           created_at?: string
           updated_at?: string
@@ -245,9 +245,9 @@ export interface Database {
           report_id: string
           shared_by_user_id: string
           share_token: string
-          permissions: any
+          permissions: Record<string, unknown> | null
           expiration_date: string | null
-          email_restrictions: any[]
+          email_restrictions: string[]
           access_count: number
           last_accessed_at: string | null
           is_active: boolean
@@ -260,9 +260,9 @@ export interface Database {
           report_id: string
           shared_by_user_id: string
           share_token?: string
-          permissions?: any
+          permissions?: Record<string, unknown> | null
           expiration_date?: string | null
-          email_restrictions?: any[]
+          email_restrictions?: string[]
           access_count?: number
           last_accessed_at?: string | null
           is_active?: boolean
@@ -275,9 +275,9 @@ export interface Database {
           report_id?: string
           shared_by_user_id?: string
           share_token?: string
-          permissions?: any
+          permissions?: Record<string, unknown> | null
           expiration_date?: string | null
-          email_restrictions?: any[]
+          email_restrictions?: string[]
           access_count?: number
           last_accessed_at?: string | null
           is_active?: boolean
@@ -291,8 +291,8 @@ export interface Database {
           job_id: string
           job_type: 'report_generation' | 'investor_matching' | 'scoring'
           status: 'queued' | 'processing' | 'completed' | 'failed'
-          input_data: any
-          output_data: any
+          input_data: Record<string, unknown> | null
+          output_data: Record<string, unknown> | null
           error_message: string | null
           progress_percentage: number
           started_at: string | null
@@ -304,8 +304,8 @@ export interface Database {
           job_id?: string
           job_type: 'report_generation' | 'investor_matching' | 'scoring'
           status?: 'queued' | 'processing' | 'completed' | 'failed'
-          input_data?: any
-          output_data?: any
+          input_data?: Record<string, unknown> | null
+          output_data?: Record<string, unknown> | null
           error_message?: string | null
           progress_percentage?: number
           started_at?: string | null
@@ -317,8 +317,8 @@ export interface Database {
           job_id?: string
           job_type?: 'report_generation' | 'investor_matching' | 'scoring'
           status?: 'queued' | 'processing' | 'completed' | 'failed'
-          input_data?: any
-          output_data?: any
+          input_data?: Record<string, unknown> | null
+          output_data?: Record<string, unknown> | null
           error_message?: string | null
           progress_percentage?: number
           started_at?: string | null
@@ -332,12 +332,12 @@ export interface Database {
           investor_id: string
           name: string
           type: 'vc' | 'pe' | 'strategic' | 'angel' | 'family_office'
-          focus_areas: any[]
+          focus_areas: string[]
           investment_range_min: number | null
           investment_range_max: number | null
-          geographic_focus: any[]
-          criteria_weights: any
-          contact_info: any
+          geographic_focus: string[]
+          criteria_weights: Record<string, number> | null
+          contact_info: Record<string, unknown> | null
           description: string | null
           website: string | null
           is_active: boolean
@@ -348,12 +348,12 @@ export interface Database {
           investor_id?: string
           name: string
           type: 'vc' | 'pe' | 'strategic' | 'angel' | 'family_office'
-          focus_areas?: any[]
+          focus_areas?: string[]
           investment_range_min?: number | null
           investment_range_max?: number | null
-          geographic_focus?: any[]
-          criteria_weights?: any
-          contact_info?: any
+          geographic_focus?: string[]
+          criteria_weights?: Record<string, number> | null
+          contact_info?: Record<string, unknown> | null
           description?: string | null
           website?: string | null
           is_active?: boolean
@@ -364,12 +364,12 @@ export interface Database {
           investor_id?: string
           name?: string
           type?: 'vc' | 'pe' | 'strategic' | 'angel' | 'family_office'
-          focus_areas?: any[]
+          focus_areas?: string[]
           investment_range_min?: number | null
           investment_range_max?: number | null
-          geographic_focus?: any[]
-          criteria_weights?: any
-          contact_info?: any
+          geographic_focus?: string[]
+          criteria_weights?: Record<string, number> | null
+          contact_info?: Record<string, unknown> | null
           description?: string | null
           website?: string | null
           is_active?: boolean
@@ -383,7 +383,7 @@ export interface Database {
           assessment_id: string
           investor_id: string
           match_score: number
-          match_reasoning: any
+          match_reasoning: Record<string, unknown> | null
           rank_position: number | null
           created_at: string
         }
@@ -392,7 +392,7 @@ export interface Database {
           assessment_id: string
           investor_id: string
           match_score: number
-          match_reasoning?: any
+          match_reasoning?: Record<string, unknown> | null
           rank_position?: number | null
           created_at?: string
         }
@@ -401,7 +401,7 @@ export interface Database {
           assessment_id?: string
           investor_id?: string
           match_score?: number
-          match_reasoning?: any
+          match_reasoning?: Record<string, unknown> | null
           rank_position?: number | null
           created_at?: string
         }

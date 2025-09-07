@@ -100,9 +100,9 @@ export default function NewAssessmentPage() {
 
       // Redirect to the assessment
       router.push(`/dashboard/assessments/${assessment.assessment_id}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error creating assessment:', err);
-      setError(err.message || 'Failed to create assessment');
+      setError((err instanceof Error ? err.message : 'An unknown error occurred') || 'Failed to create assessment');
     } finally {
       setLoading(false);
     }

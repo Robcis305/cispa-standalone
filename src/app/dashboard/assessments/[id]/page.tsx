@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -24,16 +24,16 @@ export default function AssessmentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentAnswer, setCurrentAnswer] = useState<string>('');
   const [readinessScore, setReadinessScore] = useState<number>(0);
   const [reasoning, setReasoning] = useState<string>('');
   const [improvements, setImprovements] = useState<string>('');
 
   useEffect(() => {
     loadAssessment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessmentId]);
 
-  const loadAssessment = async () => {
+  const loadAssessment = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -88,12 +88,12 @@ export default function AssessmentDetailPage() {
           console.log('No more questions - assessment should be complete');
         }
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, [assessmentId]);
 
   const submitAnswer = async () => {
     if (!currentQuestion || readinessScore === 0 || !reasoning.trim()) {
@@ -108,23 +108,6 @@ export default function AssessmentDetailPage() {
       // Temporarily use hardcoded user ID for testing
       const userId = 'b5e19763-d63e-457b-85a6-b0293c9477a7';
 
-      // Calculate score impact based on question type and answer
-      let scoreImpact = 0;
-      if (currentQuestion.question_type === 'scale' && currentQuestion.options) {
-        const option = currentQuestion.options.find((opt: any) => opt.value === currentAnswer);
-        scoreImpact = option ? option.score : 0;
-      } else if (currentQuestion.question_type === 'multiple_choice' && currentQuestion.options) {
-        const option = currentQuestion.options.find((opt: any) => opt.value === currentAnswer);
-        scoreImpact = option ? option.score : 0;
-      } else if (currentQuestion.question_type === 'boolean') {
-        scoreImpact = currentAnswer === 'true' ? 5 : 1;
-      } else if (currentQuestion.question_type === 'number') {
-        // Simple scoring for number questions - can be made more sophisticated
-        const numValue = parseFloat(currentAnswer) || 0;
-        scoreImpact = Math.min(Math.max(numValue / 1000000, 1), 6); // Scale revenue to 1-6
-      } else {
-        scoreImpact = 3; // Default neutral score for text answers
-      }
 
       // Save the answer with readiness score and structured data
       console.log('Saving answer for question:', currentQuestion.question_text);
@@ -161,7 +144,6 @@ export default function AssessmentDetailPage() {
       if (nextQuestion) {
         // Move to next question
         setCurrentQuestion(nextQuestion);
-        setCurrentAnswer('');
         setReadinessScore(0);
         setReasoning('');
         setImprovements('');
@@ -182,8 +164,8 @@ export default function AssessmentDetailPage() {
 
       // Reload data
       await loadAssessment();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setSubmitting(false);
     }
@@ -232,8 +214,8 @@ export default function AssessmentDetailPage() {
         .eq('assessment_id', assessmentId);
 
       router.push(`/dashboard/assessments/${assessmentId}/results`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
   };
 
@@ -277,7 +259,7 @@ export default function AssessmentDetailPage() {
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Rate the company's current readiness level for this aspect (1 = Not Ready, 5 = Excellent)
+            Rate the company&apos;s current readiness level for this aspect (1 = Not Ready, 5 = Excellent)
           </p>
         </div>
 
@@ -338,7 +320,7 @@ export default function AssessmentDetailPage() {
             </svg>
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Assessment Not Found</h3>
-          <p className="text-gray-600 mb-6">{error || 'The assessment you\'re looking for doesn\'t exist.'}</p>
+          <p className="text-gray-600 mb-6">{error || "The assessment you're looking for doesn't exist."}</p>
           <Link
             href="/dashboard"
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
