@@ -26,17 +26,15 @@ export default function DashboardPage() {
   const loadAssessments = async () => {
     try {
       setLoading(true);
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      if (userError || !user) {
-        setError('Please log in to view your assessments');
-        return;
-      }
+      // For demo purposes, use hardcoded user ID (same as in assessment creation)
+      // TODO: Replace with proper Supabase auth integration
+      const demoUserId = 'b5e19763-d63e-457b-85a6-b0293c9477a7';
 
       const { data, error: assessmentError } = await supabase
         .from('assessments')
         .select('*')
-        .eq('advisor_id', user.id)
+        .eq('advisor_id', demoUserId)
         .order('created_at', { ascending: false });
 
       if (assessmentError) {
