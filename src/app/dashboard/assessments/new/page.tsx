@@ -1,5 +1,8 @@
 'use client';
 import { useState } from 'react';
+
+// Disable static generation for this page since it uses Supabase
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, InformationCircleIcon } from '@heroicons/react/24/outline';

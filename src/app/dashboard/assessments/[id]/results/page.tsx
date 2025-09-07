@@ -1,5 +1,8 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+
+// Disable static generation for this page since it uses Supabase
+export const dynamic = 'force-dynamic';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
