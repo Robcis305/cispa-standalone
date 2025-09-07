@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { supabase } from '@/lib/supabase';
 
 interface AssessmentTemplate {
   id: string;
@@ -16,12 +17,15 @@ interface AssessmentTemplate {
 export default function NewAssessmentPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    companyName: '',
     template: '',
     timeline: '',
-    priority: 'medium'
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent'
   });
 
   const templates: AssessmentTemplate[] = [
@@ -66,13 +70,49 @@ export default function NewAssessmentPage() {
     }));
   };
 
+  const createAssessment = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Temporarily use hardcoded advisor ID for testing
+      const advisorId = 'b5e19763-d63e-457b-85a6-b0293c9477a7';
+
+      // Create the assessment
+      const { data: assessment, error: assessmentError } = await supabase
+        .from('assessments')
+        .insert({
+          title: formData.title,
+          description: formData.description || null,
+          company_name: formData.companyName,
+          advisor_id: advisorId,
+          template_type: formData.template,
+          priority: formData.priority,
+          timeline: formData.timeline,
+          status: 'draft'
+        })
+        .select()
+        .single();
+
+      if (assessmentError) {
+        throw assessmentError;
+      }
+
+      // Redirect to the assessment
+      router.push(`/dashboard/assessments/${assessment.assessment_id}`);
+    } catch (err: any) {
+      console.error('Error creating assessment:', err);
+      setError(err.message || 'Failed to create assessment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleNext = () => {
     if (step === 1) {
       setStep(2);
     } else if (step === 2) {
-      // Create assessment and redirect
-      const assessmentId = Date.now().toString();
-      router.push(`/dashboard/assessments/${assessmentId}`);
+      createAssessment();
     }
   };
 
@@ -86,7 +126,7 @@ export default function NewAssessmentPage() {
 
   const isStepValid = () => {
     if (step === 1) {
-      return formData.title && formData.template;
+      return formData.title && formData.companyName && formData.template;
     }
     if (step === 2) {
       return formData.timeline && formData.priority;
@@ -159,6 +199,20 @@ export default function NewAssessmentPage() {
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g., Q4 2024 Transaction Readiness"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+                    Company Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="companyName"
+                    value={formData.companyName}
+                    onChange={(e) => handleInputChange('companyName', e.target.value)}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., Acme Corporation"
                   />
                 </div>
 
@@ -283,19 +337,28 @@ export default function NewAssessmentPage() {
                     <InformationCircleIcon className="h-5 w-5 text-blue-400" />
                     <div className="ml-3">
                       <p className="text-sm text-blue-800">
-                        <strong>Assessment Summary:</strong> {formData.title}
+                        <strong>Assessment:</strong> {formData.title}
                       </p>
                       <p className="text-sm text-blue-700 mt-1">
-                        Template: {templates.find(t => t.id === formData.template)?.title}
+                        <strong>Company:</strong> {formData.companyName}
                       </p>
                       <p className="text-sm text-blue-700">
-                        Timeline: {formData.timeline} • Priority: {formData.priority}
+                        <strong>Template:</strong> {templates.find(t => t.id === formData.template)?.title}
+                      </p>
+                      <p className="text-sm text-blue-700">
+                        <strong>Timeline:</strong> {formData.timeline} • <strong>Priority:</strong> {formData.priority}
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
             </>
+          )}
+
+          {error && (
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
           )}
 
           <div className="mt-8 flex justify-between">
@@ -307,10 +370,10 @@ export default function NewAssessmentPage() {
             </button>
             <button
               onClick={handleNext}
-              disabled={!isStepValid()}
+              disabled={!isStepValid() || loading}
               className="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {step === 1 ? 'Next' : 'Create Assessment'}
+              {loading ? 'Creating...' : (step === 1 ? 'Next' : 'Create Assessment')}
             </button>
           </div>
         </div>

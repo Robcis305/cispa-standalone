@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ChartBarIcon, 
@@ -9,43 +9,45 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/outline';
-
-interface Assessment {
-  id: string;
-  title: string;
-  status: 'draft' | 'in_progress' | 'completed';
-  progress: number;
-  createdAt: string;
-  lastModified: string;
-}
+import { supabase } from '@/lib/supabase';
+import { Assessment } from '@/types/database.types';
 
 export default function DashboardPage() {
-  const [assessments] = useState<Assessment[]>([
-    {
-      id: '1',
-      title: 'Q4 2024 Transaction Readiness',
-      status: 'in_progress',
-      progress: 65,
-      createdAt: '2024-09-01',
-      lastModified: '2024-09-06'
-    },
-    {
-      id: '2', 
-      title: 'Annual Compliance Assessment',
-      status: 'completed',
-      progress: 100,
-      createdAt: '2024-08-15',
-      lastModified: '2024-08-30'
-    },
-    {
-      id: '3',
-      title: 'Mid-Year Review Assessment',
-      status: 'draft',
-      progress: 0,
-      createdAt: '2024-09-05',
-      lastModified: '2024-09-05'
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAssessments();
+  }, []);
+
+  const loadAssessments = async () => {
+    try {
+      setLoading(true);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        setError('Please log in to view your assessments');
+        return;
+      }
+
+      const { data, error: assessmentError } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('advisor_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (assessmentError) {
+        throw assessmentError;
+      }
+
+      setAssessments(data || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const getStatusIcon = (status: Assessment['status']) => {
     switch (status) {
@@ -163,69 +165,102 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          <div className="divide-y divide-gray-200">
-            {assessments.map((assessment) => (
-              <div key={assessment.id} className="px-6 py-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3">
-                      {getStatusIcon(assessment.status)}
-                      <h3 className="text-sm font-medium text-gray-900">
-                        {assessment.title}
-                      </h3>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(assessment.status)}`}>
-                        {getStatusText(assessment.status)}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
-                      <span>Created: {new Date(assessment.createdAt).toLocaleDateString()}</span>
-                      <span>Modified: {new Date(assessment.lastModified).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">
-                        {assessment.progress}% Complete
-                      </div>
-                      <div className="w-32 bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: `${assessment.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                    <Link
-                      href={`/dashboard/assessments/${assessment.id}`}
-                      className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      {assessment.status === 'completed' ? 'View' : 'Continue'}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-sm text-gray-500">Loading assessments...</p>
+            </div>
+          )}
 
-        {/* Empty State (if no assessments) */}
-        {assessments.length === 0 && (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No assessments</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by creating your first assessment.
-            </p>
-            <div className="mt-6">
-              <Link
-                href="/dashboard/assessments/new"
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-12">
+              <div className="text-red-500 mb-4">
+                <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-medium text-gray-900 mb-2">Error Loading Assessments</h3>
+              <p className="text-sm text-gray-500 mb-4">{error}</p>
+              <button
+                onClick={loadAssessments}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                New Assessment
-              </Link>
+                Try Again
+              </button>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Assessments List */}
+          {!loading && !error && assessments.length > 0 && (
+            <div className="divide-y divide-gray-200">
+              {assessments.map((assessment) => (
+                <div key={assessment.assessment_id} className="px-6 py-4 hover:bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        {getStatusIcon(assessment.status)}
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {assessment.title}
+                        </h3>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(assessment.status)}`}>
+                          {getStatusText(assessment.status)}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-sm text-gray-600">
+                        {assessment.company_name}
+                      </div>
+                      <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                        <span>Created: {new Date(assessment.created_at).toLocaleDateString()}</span>
+                        <span>Modified: {new Date(assessment.updated_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-gray-900">
+                          {assessment.progress_percentage}% Complete
+                        </div>
+                        <div className="w-32 bg-gray-200 rounded-full h-2 mt-1">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full"
+                            style={{ width: `${assessment.progress_percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                      <Link
+                        href={assessment.status === 'completed' ? `/dashboard/assessments/${assessment.assessment_id}/results` : `/dashboard/assessments/${assessment.assessment_id}`}
+                        className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        {assessment.status === 'completed' ? 'View Results' : 'Continue'}
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && assessments.length === 0 && (
+            <div className="text-center py-12">
+              <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No assessments yet</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by creating your first assessment.
+              </p>
+              <div className="mt-6">
+                <Link
+                  href="/dashboard/assessments/new"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  New Assessment
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
