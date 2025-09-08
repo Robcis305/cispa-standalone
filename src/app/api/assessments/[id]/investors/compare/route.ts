@@ -221,7 +221,7 @@ function generateMatchReasoning(
   const opportunities: string[] = []
   
   Object.entries(companyScores).forEach(([dimension, score]) => {
-    const weight = investorWeights[dimension] || COMPARISON_CATEGORIES[dimension as ComparisonDimension]?.weight || 0
+    const weight = (investorWeights as any)[dimension] || COMPARISON_CATEGORIES[dimension as ComparisonDimension]?.weight || 0
     const normalizedWeight = weight / 10 // Convert to decimal
     const isImportantToInvestor = weight >= 7 // High priority on 1-10 scale
     const categoryName = COMPARISON_CATEGORIES[dimension as ComparisonDimension]?.name || dimension
@@ -270,7 +270,7 @@ function generateComparisonMatrix(investors: any[], companyScores: Record<string
       dimensionFit: dimensions.reduce((fit, dimension) => {
         const categoryInfo = COMPARISON_CATEGORIES[dimension]
         const investorWeights = UPDATED_INVESTOR_CRITERIA_WEIGHTS[match.investors.name as keyof typeof UPDATED_INVESTOR_CRITERIA_WEIGHTS]
-        const rawWeight = investorWeights?.[dimension] || categoryInfo.weight
+        const rawWeight = (investorWeights as any)?.[dimension] || categoryInfo.weight
         const weight = rawWeight / 10 // Convert to decimal
         const companyScore = companyScores[dimension] || 0
         
@@ -317,7 +317,7 @@ function generateRadarChartData(investors: any[], companyScores: Record<string, 
           data: dimensions.map(d => {
             const investorWeights = UPDATED_INVESTOR_CRITERIA_WEIGHTS[match.investors.name as keyof typeof UPDATED_INVESTOR_CRITERIA_WEIGHTS]
             const categoryInfo = COMPARISON_CATEGORIES[d]
-            return (investorWeights?.[d] || categoryInfo.weight) * 10 // Scale to 0-100
+            return ((investorWeights as any)?.[d] || categoryInfo.weight) * 10 // Scale to 0-100
           }),
           backgroundColor: color.bg,
           borderColor: color.border,
