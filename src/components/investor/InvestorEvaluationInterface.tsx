@@ -38,7 +38,7 @@ export default function InvestorEvaluationInterface({
 }: InvestorEvaluationInterfaceProps) {
   const [currentStep, setCurrentStep] = useState<EvaluationStep>('category_selection')
   const [selectedCategories, setSelectedCategories] = useState<InvestorDimension[]>([])
-  const [categoryWeights, setCategoryWeights] = useState<Record<InvestorDimension, number>>({})
+  const [categoryWeights, setCategoryWeights] = useState<Record<InvestorDimension, number>>({} as Record<InvestorDimension, number>)
   const [evaluationData, setEvaluationData] = useState<Record<string, EvaluationScore[]>>({})
   const [currentInvestorIndex, setCurrentInvestorIndex] = useState(0)
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0)
