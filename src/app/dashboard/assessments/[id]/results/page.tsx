@@ -10,11 +10,16 @@ import {
   ChartBarIcon,
   DocumentTextIcon,
   ShareIcon,
+  UsersIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import { supabase } from '@/lib/supabase';
 import { Assessment } from '@/types/database.types';
+import { generatePDFReport } from '@/lib/pdfReportGenerator';
+import { SharingService } from '@/lib/sharingService';
+import ShareModal from '@/components/ShareModal';
 
 interface DimensionScore {
   dimension: string;
@@ -41,6 +46,7 @@ export default function AssessmentResultsPage() {
   const [error, setError] = useState<string | null>(null);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [sharingResults, setSharingResults] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     loadResults();
@@ -122,23 +128,13 @@ export default function AssessmentResultsPage() {
         timestamp: new Date().toISOString()
       };
 
-      // Generate PDF-like content (simplified for now)
-      const reportContent = generateReportContent(reportData);
-      
-      // Create and download the report file
-      const blob = new Blob([reportContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${assessment.company_name}-assessment-report-${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Generate PDF report
+      await generatePDFReport(reportData);
       
     } catch (error) {
       console.error('Error generating report:', error);
-      alert('Error generating report. Please try again.');
+      console.error('Error details:', error instanceof Error ? error.message : error);
+      alert(`Error generating report: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
     } finally {
       setGeneratingReport(false);
     }
@@ -146,63 +142,56 @@ export default function AssessmentResultsPage() {
 
   const shareResults = async () => {
     if (!assessment) return;
-    
+    setShowShareModal(true);
+  };
+
+  const createShareLink = async (options: {
+    permissions: { view: boolean; download: boolean };
+    expiration_hours?: number;
+    email_restrictions?: string[];
+  }) => {
+    if (!assessment) return;
+
     setSharingResults(true);
     try {
+      // Include actual assessment data in the share token
+      const shareData = {
+        assessmentId,
+        companyName: assessment.company_name,
+        title: assessment.title,
+        overallScore: assessment.overall_readiness_score || 0,
+        dimensionScores: dimensionBreakdown,
+        recommendations: generateRecommendations(dimensionBreakdown),
+        permissions: options.permissions,
+        expirationHours: options.expiration_hours,
+        emailRestrictions: options.email_restrictions,
+        createdAt: Date.now(),
+      };
+      
+      // Create a simple encoded token (in production, this would be encrypted)
+      const token = btoa(JSON.stringify(shareData));
+      
       // Generate shareable URL
-      const shareUrl = `${window.location.origin}/shared/assessment/${assessmentId}`;
+      const shareUrl = `${window.location.origin}/shared/${token}`;
       
       // Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
-      alert('Share link copied to clipboard!');
       
-      // TODO: In future, implement proper share functionality with:
-      // - Email sharing
-      // - Access control
-      // - Expiration dates
+      const expirationText = options.expiration_hours 
+        ? new Date(Date.now() + options.expiration_hours * 60 * 60 * 1000).toLocaleString()
+        : 'Never';
       
+      alert(`Share link created and copied to clipboard!\n\nLink expires: ${expirationText}\nPermissions: ${options.permissions.view ? 'View' : ''} ${options.permissions.download ? 'Download' : ''}\n\nNote: This is a demo implementation. In production, shares would be stored securely in the database.`);
+      
+      setShowShareModal(false);
     } catch (error) {
-      console.error('Error sharing results:', error);
-      // Fallback for older browsers
-      const shareUrl = `${window.location.origin}/shared/assessment/${assessmentId}`;
-      prompt('Share this URL:', shareUrl);
+      console.error('Error creating share link:', error);
+      alert(`Error creating share link: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setSharingResults(false);
     }
   };
 
-  const generateReportContent = (data: { assessment: { company: string; title: string; completedAt: string; overallScore: number }; dimensionScores: DimensionScore[]; recommendations: Recommendation[] }) => {
-    return `
-=== CISPA TRANSACTION READINESS ASSESSMENT REPORT ===
-
-Company: ${data.assessment.company}
-Assessment: ${data.assessment.title}
-Completed: ${new Date(data.assessment.completedAt).toLocaleDateString()}
-Overall Readiness Score: ${data.assessment.overallScore}/100
-
-=== DIMENSION SCORES ===
-${data.dimensionScores.map((dim: DimensionScore) => 
-  `${dim.dimension.toUpperCase()}: ${dim.score}/100`
-).join('\n')}
-
-=== RECOMMENDATIONS ===
-${data.recommendations.map((rec: Recommendation, index: number) => 
-  `${index + 1}. ${rec.title}\n   Priority: ${rec.priority.toUpperCase()}\n   ${rec.description}\n   Actions:\n${rec.actions.map(action => `   - ${action}`).join('\n')}\n`
-).join('\n')}
-
-=== REPORT SUMMARY ===
-${data.assessment.overallScore >= 80 ? 
-  'EXCELLENT: Your company demonstrates strong transaction readiness across all dimensions.' :
-data.assessment.overallScore >= 65 ?
-  'GOOD: Your company shows solid preparation with some areas for improvement.' :
-data.assessment.overallScore >= 40 ?
-  'MODERATE: Significant preparation needed before initiating transaction processes.' :
-  'LOW: Substantial work required across multiple dimensions before considering transactions.'
-}
-
-Generated by CISPA Platform on ${new Date().toLocaleDateString()}
-`;
-  };
 
   const generateRecommendations = (dimensionScores: DimensionScore[]) => {
     const recommendations: Recommendation[] = [];
@@ -401,6 +390,20 @@ Generated by CISPA Platform on ${new Date().toLocaleDateString()}
               <p className="text-gray-600 mt-1">{assessment.title} • {assessment.company_name}</p>
             </div>
             <div className="flex space-x-3">
+              <Link
+                href={`/dashboard/assessments/${assessmentId}/edit`}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Edit Assessment
+              </Link>
+              <Link
+                href={`/dashboard/assessments/${assessmentId}/investors`}
+                className="inline-flex items-center px-4 py-2 border border-purple-300 rounded-md shadow-sm text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100"
+              >
+                <UsersIcon className="h-4 w-4 mr-2" />
+                Find Investors
+              </Link>
               <button
                 onClick={shareResults}
                 disabled={sharingResults}
@@ -415,7 +418,7 @@ Generated by CISPA Platform on ${new Date().toLocaleDateString()}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
               >
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
-                {generatingReport ? 'Generating...' : 'Generate Report'}
+                {generatingReport ? 'Generating PDF...' : 'Generate PDF Report 📄'}
               </button>
             </div>
           </div>
@@ -543,6 +546,7 @@ Generated by CISPA Platform on ${new Date().toLocaleDateString()}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-blue-900 mb-3">Next Steps</h3>
               <div className="space-y-3 text-sm text-blue-800">
+                <p>• Explore personalized investor matches based on your scores</p>
                 <p>• Download your comprehensive assessment report</p>
                 <p>• Share results with your team and advisors</p>
                 <p>• Begin working on priority recommendations</p>
@@ -552,6 +556,14 @@ Generated by CISPA Platform on ${new Date().toLocaleDateString()}
           </div>
         </div>
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        onCreateShare={createShareLink}
+        isLoading={sharingResults}
+      />
     </div>
   );
 }

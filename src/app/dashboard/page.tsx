@@ -9,7 +9,8 @@ import {
   PlusIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon 
+  ExclamationTriangleIcon,
+  CogIcon
 } from '@heroicons/react/24/outline';
 import { supabase } from '@/lib/supabase';
 import { Assessment } from '@/types/database.types';
@@ -94,6 +95,13 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="flex items-center space-x-4">
+              <Link
+                href="/dashboard/admin/questions"
+                className="flex items-center text-sm text-gray-600 hover:text-gray-900"
+              >
+                <CogIcon className="h-4 w-4 mr-1" />
+                Question Admin
+              </Link>
               <span className="text-sm text-gray-500">Welcome, Advisor</span>
               <Link
                 href="/login"

@@ -99,7 +99,7 @@ export default function LoginPage() {
             {message && (
               <div className="mt-6 text-center">
                 <p className={`text-xs ${message.includes('successful') ? 'text-green-600' : message.includes('Demo') ? 'text-gray-500' : 'text-red-600'}`}>
-                  {message} = $0
+                  {message}
                 </p>
               </div>
             )}
@@ -116,7 +116,13 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6">
-            <div className="text-center">
+            <div className="text-center space-y-3">
+              <Link
+                href="/dashboard"
+                className="block w-full py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                🚀 Skip Login - Go to Dashboard (Testing)
+              </Link>
               <Link
                 href="/"
                 className="text-sm text-blue-600 hover:text-blue-500"

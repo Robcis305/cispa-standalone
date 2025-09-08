@@ -1,10 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Disable static generation for this page since it uses Supabase
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeftIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { supabase } from '@/lib/supabase';
 
@@ -19,17 +19,37 @@ interface AssessmentTemplate {
 
 export default function NewAssessmentPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     companyName: '',
     template: '',
     timeline: '',
-    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent'
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
+    // Company profile for investor matching
+    industry: '',
+    annualRevenue: '',
+    fundingAmountSought: '',
+    investmentType: '' as '' | 'control' | 'minority' | 'either',
+    companyStage: '' as '' | 'pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage',
+    geographicLocation: '',
+    growthRate: '',
+    businessModel: '' as '' | 'b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other',
+    ebitda: ''
   });
+
+  useEffect(() => {
+    // Get selected questions from URL parameters
+    const questionsParam = searchParams.get('selectedQuestions');
+    if (questionsParam) {
+      setSelectedQuestions(questionsParam.split(','));
+    }
+  }, [searchParams]);
 
   const templates: AssessmentTemplate[] = [
     {
@@ -100,6 +120,20 @@ export default function NewAssessmentPage() {
       if (assessmentError) {
         throw assessmentError;
       }
+
+      // Store company profile data in localStorage temporarily until database schema is updated
+      const companyProfile = {
+        industry: formData.industry,
+        annualRevenue: formData.annualRevenue ? parseFloat(formData.annualRevenue) : null,
+        fundingAmountSought: formData.fundingAmountSought ? parseFloat(formData.fundingAmountSought) : null,
+        investmentType: formData.investmentType,
+        companyStage: formData.companyStage,
+        geographicLocation: formData.geographicLocation,
+        growthRate: formData.growthRate ? parseFloat(formData.growthRate) : null,
+        businessModel: formData.businessModel,
+        ebitda: formData.ebitda ? parseFloat(formData.ebitda) : null
+      };
+      localStorage.setItem(`companyProfile_${assessment.assessment_id}`, JSON.stringify(companyProfile));
 
       // Redirect to the assessment
       router.push(`/dashboard/assessments/${assessment.assessment_id}`);
@@ -231,6 +265,158 @@ export default function NewAssessmentPage() {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Optional description of this assessment..."
                   />
+                </div>
+
+                {/* Company Profile Section */}
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Company Profile (For Investor Matching)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div>
+                      <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
+                        Industry
+                      </label>
+                      <input
+                        type="text"
+                        id="industry"
+                        value={formData.industry}
+                        onChange={(e) => handleInputChange('industry', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., Technology, Healthcare, Finance"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="companyStage" className="block text-sm font-medium text-gray-700">
+                        Company Stage
+                      </label>
+                      <select
+                        id="companyStage"
+                        value={formData.companyStage}
+                        onChange={(e) => handleInputChange('companyStage', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select stage...</option>
+                        <option value="pre_seed">Pre-Seed</option>
+                        <option value="seed">Seed</option>
+                        <option value="series_a">Series A</option>
+                        <option value="series_b">Series B</option>
+                        <option value="series_c">Series C</option>
+                        <option value="growth">Growth</option>
+                        <option value="late_stage">Late Stage</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="annualRevenue" className="block text-sm font-medium text-gray-700">
+                        Annual Revenue ($)
+                      </label>
+                      <input
+                        type="number"
+                        id="annualRevenue"
+                        value={formData.annualRevenue}
+                        onChange={(e) => handleInputChange('annualRevenue', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="1000000"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="fundingAmountSought" className="block text-sm font-medium text-gray-700">
+                        Funding Amount Sought ($)
+                      </label>
+                      <input
+                        type="number"
+                        id="fundingAmountSought"
+                        value={formData.fundingAmountSought}
+                        onChange={(e) => handleInputChange('fundingAmountSought', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="5000000"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="investmentType" className="block text-sm font-medium text-gray-700">
+                        Investment Type
+                      </label>
+                      <select
+                        id="investmentType"
+                        value={formData.investmentType}
+                        onChange={(e) => handleInputChange('investmentType', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select type...</option>
+                        <option value="control">Control</option>
+                        <option value="minority">Minority</option>
+                        <option value="either">Either</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="businessModel" className="block text-sm font-medium text-gray-700">
+                        Business Model
+                      </label>
+                      <select
+                        id="businessModel"
+                        value={formData.businessModel}
+                        onChange={(e) => handleInputChange('businessModel', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select model...</option>
+                        <option value="b2b_saas">B2B SaaS</option>
+                        <option value="b2c">B2C</option>
+                        <option value="marketplace">Marketplace</option>
+                        <option value="hardware">Hardware</option>
+                        <option value="biotech">Biotech</option>
+                        <option value="fintech">Fintech</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="geographicLocation" className="block text-sm font-medium text-gray-700">
+                        Geographic Location
+                      </label>
+                      <input
+                        type="text"
+                        id="geographicLocation"
+                        value={formData.geographicLocation}
+                        onChange={(e) => handleInputChange('geographicLocation', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., San Francisco, New York, London"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="growthRate" className="block text-sm font-medium text-gray-700">
+                        Growth Rate (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        id="growthRate"
+                        value={formData.growthRate}
+                        onChange={(e) => handleInputChange('growthRate', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="25"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="ebitda" className="block text-sm font-medium text-gray-700">
+                        Earnings (EBITDA) ($)
+                      </label>
+                      <input
+                        type="number"
+                        id="ebitda"
+                        value={formData.ebitda}
+                        onChange={(e) => handleInputChange('ebitda', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="2000000"
+                      />
+                    </div>
+
+                  </div>
                 </div>
 
                 <div>

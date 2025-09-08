@@ -38,7 +38,7 @@ export interface Database {
           question_id: string
           question_text: string
           question_type: 'text' | 'number' | 'file_upload' | 'multiple_choice' | 'scale' | 'boolean'
-          dimension: 'financial' | 'operational' | 'market' | 'technology' | 'legal' | 'strategic'
+          dimension: 'financial' | 'operational' | 'market' | 'technology' | 'legal' | 'strategic' | 'investor_profile' | 'fund_structure' | 'track_record' | 'value_add' | 'governance' | 'investment_philosophy' | 'cultural_fit' | 'negotiation' | 'reputation' | 'future_orientation' | 'trust' | 'communication' | 'decision_making' | 'founder_autonomy' | 'human_partnership' | 'relationship_potential' | 'self_awareness'
           module: 'core' | 'marketing' | 'technology' | 'human_capital' | 'investor'
           order_index: number
           branching_conditions: Record<string, unknown> | null
@@ -49,6 +49,7 @@ export interface Database {
           help_text: string | null
           is_required: boolean
           is_active: boolean
+          is_core: boolean
           created_at: string
           updated_at: string
         }
@@ -74,7 +75,7 @@ export interface Database {
           question_id?: string
           question_text?: string
           question_type?: 'text' | 'number' | 'file_upload' | 'multiple_choice' | 'scale' | 'boolean'
-          dimension?: 'financial' | 'operational' | 'market' | 'technology' | 'legal' | 'strategic'
+          dimension?: 'financial' | 'operational' | 'market' | 'technology' | 'legal' | 'strategic' | 'investor_profile' | 'fund_structure' | 'track_record' | 'value_add' | 'governance' | 'investment_philosophy' | 'cultural_fit' | 'negotiation' | 'reputation' | 'future_orientation' | 'trust' | 'communication' | 'decision_making' | 'founder_autonomy' | 'human_partnership' | 'relationship_potential' | 'self_awareness'
           module?: 'core' | 'marketing' | 'technology' | 'human_capital' | 'investor'
           order_index?: number
           branching_conditions?: Record<string, unknown> | null
@@ -111,6 +112,15 @@ export interface Database {
           progress_percentage: number
           created_at: string
           updated_at: string
+          // Company profile for investor matching
+          industry: string | null
+          annual_revenue: number | null
+          funding_amount_sought: number | null
+          investment_type: 'control' | 'minority' | 'either' | null
+          company_stage: 'pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage' | null
+          geographic_location: string | null
+          growth_rate: number | null
+          business_model: 'b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other' | null
         }
         Insert: {
           assessment_id?: string
@@ -133,6 +143,15 @@ export interface Database {
           progress_percentage?: number
           created_at?: string
           updated_at?: string
+          // Company profile for investor matching
+          industry?: string | null
+          annual_revenue?: number | null
+          funding_amount_sought?: number | null
+          investment_type?: 'control' | 'minority' | 'either' | null
+          company_stage?: 'pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage' | null
+          geographic_location?: string | null
+          growth_rate?: number | null
+          business_model?: 'b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other' | null
         }
         Update: {
           assessment_id?: string
@@ -155,6 +174,15 @@ export interface Database {
           progress_percentage?: number
           created_at?: string
           updated_at?: string
+          // Company profile for investor matching
+          industry?: string | null
+          annual_revenue?: number | null
+          funding_amount_sought?: number | null
+          investment_type?: 'control' | 'minority' | 'either' | null
+          company_stage?: 'pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage' | null
+          geographic_location?: string | null
+          growth_rate?: number | null
+          business_model?: 'b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other' | null
         }
       }
       answers: {
@@ -343,6 +371,15 @@ export interface Database {
           is_active: boolean
           created_at: string
           updated_at: string
+          // Investor matching criteria
+          preferred_industries: string[]
+          preferred_revenue_range_min: number | null
+          preferred_revenue_range_max: number | null
+          preferred_investment_types: ('control' | 'minority' | 'either')[]
+          preferred_company_stages: ('pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage')[]
+          preferred_business_models: ('b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other')[]
+          minimum_growth_rate: number | null
+          match_score_threshold: number | null
         }
         Insert: {
           investor_id?: string
@@ -359,6 +396,15 @@ export interface Database {
           is_active?: boolean
           created_at?: string
           updated_at?: string
+          // Investor matching criteria
+          preferred_industries?: string[]
+          preferred_revenue_range_min?: number | null
+          preferred_revenue_range_max?: number | null
+          preferred_investment_types?: ('control' | 'minority' | 'either')[]
+          preferred_company_stages?: ('pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage')[]
+          preferred_business_models?: ('b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other')[]
+          minimum_growth_rate?: number | null
+          match_score_threshold?: number | null
         }
         Update: {
           investor_id?: string
@@ -375,6 +421,15 @@ export interface Database {
           is_active?: boolean
           created_at?: string
           updated_at?: string
+          // Investor matching criteria
+          preferred_industries?: string[]
+          preferred_revenue_range_min?: number | null
+          preferred_revenue_range_max?: number | null
+          preferred_investment_types?: ('control' | 'minority' | 'either')[]
+          preferred_company_stages?: ('pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage')[]
+          preferred_business_models?: ('b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other')[]
+          minimum_growth_rate?: number | null
+          match_score_threshold?: number | null
         }
       }
       investor_matches: {
