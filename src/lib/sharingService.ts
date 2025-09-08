@@ -81,7 +81,7 @@ export class SharingService {
       }
 
       // Check if expired
-      if (data.expiration_date && new Date(data.expiration_date) < new Date()) {
+      if ((data as any).expiration_date && new Date((data as any).expiration_date) < new Date()) {
         return { data: null, error: 'Share link has expired' };
       }
 
@@ -108,8 +108,8 @@ export class SharingService {
       }
 
       // Check email restrictions if any
-      if (share.email_restrictions && share.email_restrictions.length > 0) {
-        if (!email || !share.email_restrictions.includes(email)) {
+      if ((share as any).email_restrictions && (share as any).email_restrictions.length > 0) {
+        if (!email || !(share as any).email_restrictions.includes(email)) {
           return { data: null, error: 'Access restricted to specific email addresses' };
         }
       }
@@ -118,17 +118,17 @@ export class SharingService {
       const { error: updateError } = await supabase
         .from('shares')
         .update({
-          access_count: share.access_count + 1,
+          access_count: (share as any).access_count + 1,
           last_accessed_at: new Date().toISOString(),
         })
-        .eq('share_id', share.share_id);
+        .eq('share_id', (share as any).share_id);
 
       if (updateError) {
         console.error('Failed to update access count:', updateError);
       }
 
       // Log the access
-      await this.logShareAccess(share.share_id, email, ipAddress, userAgent);
+      await this.logShareAccess((share as any).share_id, email, ipAddress, userAgent);
 
       return { data: share, error: null };
     } catch (error) {
@@ -148,7 +148,7 @@ export class SharingService {
         .eq('share_id', shareId)
         .single();
 
-      if (shareError || !share || share.shared_by_user_id !== userId) {
+      if (shareError || !share || (share as any).shared_by_user_id !== userId) {
         return { error: 'Share not found or access denied' };
       }
 
