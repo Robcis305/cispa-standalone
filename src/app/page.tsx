@@ -7,9 +7,13 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center min-h-screen text-center">
           <div className="max-w-3xl">
-            <h1 className="text-4xl font-bold text-gray-900 sm:text-6xl mb-6">
-              CISPA Platform
-            </h1>
+            <div className="flex items-center justify-center mb-6">
+              <img 
+                src="/cis-partners-logo.png" 
+                alt="CIS Partners" 
+                className="h-16 w-auto"
+              />
+            </div>
             <p className="text-xl text-gray-600 mb-8">
               CIS Platform Assessment - Streamline your transaction readiness assessment from 40+ hours to under 2 hours.
             </p>

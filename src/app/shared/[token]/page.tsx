@@ -94,7 +94,7 @@ export default function SharedReportPage() {
       };
       
       // Header
-      addText('CISPA Platform - Transaction Readiness Assessment', 18, true);
+      addText('CIS Partners - Transaction Readiness Assessment', 18, true);
       addText(`${shareData.title || 'Assessment'} • ${shareData.companyName || 'Company'}`, 14);
       yPosition += 10;
       
@@ -136,7 +136,7 @@ export default function SharedReportPage() {
       yPosition = pageHeight - 30;
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Generated on ${new Date().toLocaleDateString()} | CISPA Platform`, margin, yPosition);
+      pdf.text(`Generated on ${new Date().toLocaleDateString()} | CIS Partners`, margin, yPosition);
       pdf.text(`Shared Report - ${shareData.permissions?.view ? 'View' : ''}${shareData.permissions?.view && shareData.permissions?.download ? ' & ' : ''}${shareData.permissions?.download ? 'Download' : ''} Access`, margin, yPosition + 10);
       
       // Save the PDF
@@ -192,8 +192,13 @@ export default function SharedReportPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link href="/login" className="text-xl font-bold text-gray-900">
-                CISPA Platform - Shared Report
+              <Link href="/login" className="flex items-center">
+                <img 
+                  src="/cis-partners-logo.png" 
+                  alt="CIS Partners" 
+                  className="h-8 w-auto"
+                />
+                <span className="ml-2 text-xl font-bold text-gray-900">- Shared Report</span>
               </Link>
             </div>
           </div>
@@ -366,7 +371,7 @@ export default function SharedReportPage() {
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-3">About CISPA Platform</h3>
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">About CIS Partners</h3>
               <div className="space-y-3 text-sm text-blue-800">
                 <p>• Comprehensive transaction readiness assessments</p>
                 <p>• AI-powered recommendations and insights</p>

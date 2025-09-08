@@ -373,8 +373,12 @@ export default function AssessmentResultsPage() {
                 Back to Assessment
               </Link>
               <div className="h-6 border-l border-gray-300" />
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CISPA Platform
+              <Link href="/dashboard" className="flex items-center">
+                <img 
+                  src="/cis-partners-logo.png" 
+                  alt="CIS Partners" 
+                  className="h-8 w-auto"
+                />
               </Link>
             </div>
           </div>

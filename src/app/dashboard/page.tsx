@@ -90,8 +90,12 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link href="/" className="text-xl font-bold text-gray-900">
-                CISPA Platform
+              <Link href="/" className="flex items-center">
+                <img 
+                  src="/cis-partners-logo.png" 
+                  alt="CIS Partners" 
+                  className="h-8 w-auto"
+                />
               </Link>
             </div>
             <div className="flex items-center space-x-4">

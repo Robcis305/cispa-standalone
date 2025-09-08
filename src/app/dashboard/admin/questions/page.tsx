@@ -290,8 +290,12 @@ export default function QuestionsAdminPage() {
                 Back to Dashboard
               </Link>
               <div className="h-6 border-l border-gray-300" />
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                CISPA Platform
+              <Link href="/dashboard" className="flex items-center">
+                <img 
+                  src="/cis-partners-logo.png" 
+                  alt="CIS Partners" 
+                  className="h-8 w-auto"
+                />
               </Link>
               <span className="text-sm text-gray-500">• Question Management</span>
             </div>
