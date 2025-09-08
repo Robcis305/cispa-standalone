@@ -85,7 +85,7 @@ export class SharingService {
         return { data: null, error: 'Share link has expired' };
       }
 
-      return { data, error: null };
+      return { data: data as any, error: null };
     } catch (error) {
       return { data: null, error: `Failed to get share: ${error}` };
     }
