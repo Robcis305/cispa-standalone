@@ -273,7 +273,7 @@ export default function SharedReportPage() {
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Dimension Breakdown</h3>
               <div className="space-y-6">
-                {(shareData?.dimensionScores || []).map((dim) => {
+                {(shareData?.dimensionScores || []).map((dim: any) => {
                   const getColor = (score: number) => {
                     if (score >= 80) return 'green';
                     if (score >= 65) return 'yellow';
@@ -315,7 +315,7 @@ export default function SharedReportPage() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Priority Recommendations</h3>
               <div className="space-y-6">
-                {(shareData?.recommendations || []).map((rec, index) => (
+                {(shareData?.recommendations || []).map((rec: any, index: number) => (
                   <div key={index} className="border-l-4 border-blue-500 pl-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium text-gray-900">{rec.title}</h4>

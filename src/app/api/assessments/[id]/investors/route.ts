@@ -60,7 +60,7 @@ export async function GET(
     matches.sort((a, b) => b.matchScore - a.matchScore)
 
     // Add rank positions
-    matches.forEach((match, index) => {
+    matches.forEach((match: any, index: number) => {
       match.rankPosition = index + 1
     })
 
@@ -153,8 +153,8 @@ function calculateMatchScore(
   
   Object.entries(weights).forEach(([dimension, weight]) => {
     if (companyScores[dimension] !== undefined) {
-      totalScore += companyScores[dimension] * weight
-      totalWeight += weight
+      totalScore += companyScores[dimension] * (weight as number)
+      totalWeight += (weight as number)
     }
   })
   
@@ -204,7 +204,7 @@ function generateFitAnalysis(
   
   Object.entries(weights).forEach(([dimension, weight]) => {
     const companyScore = companyScores[dimension] || 0
-    const weightedScore = companyScore * weight
+    const weightedScore = companyScore * (weight as number)
     
     analysis[dimension] = {
       companyScore,

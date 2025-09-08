@@ -439,7 +439,7 @@ export default function QuestionsAdminPage() {
                         </span>
 
                         <span className="text-xs font-medium text-gray-500 capitalize">
-                          {DIMENSION_LABELS[question.dimension]}
+                          {DIMENSION_LABELS[question.dimension as keyof typeof DIMENSION_LABELS] || question.dimension}
                         </span>
 
                         {isCore && (

@@ -50,7 +50,7 @@ export async function GET(
     }
 
     // Transform the data to match the expected format
-    const formattedMatches = matches.map((match, index) => ({
+    const formattedMatches = matches.map((match: any, index: number) => ({
       investor: {
         investor_id: match.investors.investor_id,
         name: match.investors.name,

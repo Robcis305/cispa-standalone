@@ -170,7 +170,7 @@ async function updateRankPositions(supabase: any, assessmentId: string) {
   }
 
   // Update rank positions
-  const updates = matches.map((match, index) => 
+  const updates = matches.map((match: any, index: number) => 
     supabase
       .from('investor_matches')
       .update({ rank_position: index + 1 })
