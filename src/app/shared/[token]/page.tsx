@@ -329,7 +329,7 @@ export default function SharedReportPage() {
                     <div className="bg-gray-50 rounded-md p-3">
                       <p className="text-sm font-medium text-gray-900 mb-2">Recommended Actions:</p>
                       <ul className="text-sm text-gray-600 space-y-1">
-                        {rec.actions.map((action, actionIndex) => (
+                        {rec.actions.map((action: any, actionIndex: number) => (
                           <li key={actionIndex} className="flex items-start">
                             <span className="inline-block w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                             {action}
