@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 
 // Disable static generation for this page since it uses Supabase
+// Environment variables configured in Vercel for production
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { 
