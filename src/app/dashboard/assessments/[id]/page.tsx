@@ -10,10 +10,12 @@ import {
   CheckCircleIcon, 
   ClockIcon,
   DocumentTextIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline';
 import { supabase } from '@/lib/supabase';
-import { Assessment, Question, Answer } from '@/types/database.types';
+import { Assessment, Question, Answer, CompanyProfile } from '@/types/database.types';
+import CompanyProfileEditor from '@/components/CompanyProfileEditor';
 
 export default function AssessmentDetailPage() {
   const params = useParams();
@@ -400,20 +402,161 @@ export default function AssessmentDetailPage() {
         </div>
 
         {isCompleted ? (
-          /* Show completion message */
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Assessment Complete!</h2>
-            <p className="text-gray-600 mb-6">
-              Your transaction readiness assessment has been completed. View your results and recommendations.
-            </p>
-            <Link
-              href={`/dashboard/assessments/${assessmentId}/results`}
-              className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700"
-            >
-              <DocumentTextIcon className="h-5 w-5 mr-2" />
-              View Results
-            </Link>
+          /* Show assessment overview for completed assessments */
+          <div className="space-y-6">
+            {/* Company Profile Section */}
+            <CompanyProfileEditor
+              profile={{
+                company_name: assessment.company_name,
+                industry: assessment.industry,
+                annual_revenue: assessment.annual_revenue,
+                funding_amount_sought: assessment.funding_amount_sought,
+                investment_type: assessment.investment_type,
+                company_stage: assessment.company_stage,
+                geographic_location: assessment.geographic_location,
+                growth_rate: assessment.growth_rate,
+                business_model: assessment.business_model
+              }}
+              onSave={async (updatedProfile: CompanyProfile) => {
+                const { error } = await supabase
+                  .from('assessments')
+                  .update({
+                    company_name: updatedProfile.company_name,
+                    industry: updatedProfile.industry,
+                    annual_revenue: updatedProfile.annual_revenue,
+                    funding_amount_sought: updatedProfile.funding_amount_sought,
+                    investment_type: updatedProfile.investment_type,
+                    company_stage: updatedProfile.company_stage,
+                    geographic_location: updatedProfile.geographic_location,
+                    growth_rate: updatedProfile.growth_rate,
+                    business_model: updatedProfile.business_model
+                  })
+                  .eq('assessment_id', assessmentId);
+
+                if (error) {
+                  console.error('Error updating company profile:', error);
+                  throw error;
+                }
+
+                // Update local state
+                setAssessment(prev => prev ? {
+                  ...prev,
+                  ...updatedProfile
+                } : null);
+              }}
+            />
+
+            {/* Assessment Information Card */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Assessment Information</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Assessment Title</label>
+                  <p className="text-lg text-gray-900">{assessment.title}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Status</label>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                    <span className="text-green-700 font-medium">Completed</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Completed Date</label>
+                  <p className="text-lg text-gray-900">
+                    {assessment.completed_at ? new Date(assessment.completed_at).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Overall Score</label>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {assessment.overall_readiness_score || 0}/150
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Questions Answered</label>
+                  <p className="text-lg text-gray-900">{answers.length}/{questions.length}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Progress</label>
+                  <p className="text-lg text-gray-900">{assessment.progress_percentage}%</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dimension Scores Overview */}
+            {assessment.dimension_scores && typeof assessment.dimension_scores === 'object' && Object.keys(assessment.dimension_scores).length > 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Dimension Scores</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Object.entries(assessment.dimension_scores).map(([dimension, score]) => {
+                    const displayNames: Record<string, string> = {
+                      'financial': 'Financial Integrity',
+                      'operational': 'Team Capability', 
+                      'market': 'Market Positioning',
+                      'technology': 'Presentation Quality',
+                      'legal': 'Capital Clarity',
+                      'strategic': 'Strategic Narrative'
+                    };
+                    const displayName = displayNames[dimension] || dimension.charAt(0).toUpperCase() + dimension.slice(1);
+                    const numericScore = typeof score === 'number' ? score : parseInt(String(score)) || 0;
+                    const percentage = Math.round((numericScore / 25) * 100); // Assuming 25 max per dimension
+                    
+                    return (
+                      <div key={dimension} className="border rounded-lg p-4">
+                        <h3 className="font-medium text-gray-900 mb-2">{displayName}</h3>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-2xl font-bold text-gray-900">{numericScore}</span>
+                          <span className="text-sm text-gray-500">{percentage}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              percentage >= 80 ? 'bg-green-500' :
+                              percentage >= 60 ? 'bg-yellow-500' :
+                              'bg-red-500'
+                            }`}
+                            style={{ width: `${Math.max(0, Math.min(100, percentage))}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Dimension Scores</h2>
+                <p className="text-gray-600">Dimension scores will be available after completing the assessment.</p>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={`/dashboard/assessments/${assessmentId}/results`}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <DocumentTextIcon className="h-4 w-4 mr-2" />
+                  View Full Results
+                </Link>
+                <Link
+                  href={`/dashboard/assessments/${assessmentId}/edit`}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Edit Assessment
+                </Link>
+                <Link
+                  href={`/dashboard/assessments/${assessmentId}/investors`}
+                  className="inline-flex items-center px-4 py-2 border border-purple-300 rounded-md shadow-sm text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100"
+                >
+                  <UsersIcon className="h-4 w-4 mr-2" />
+                  Find Investors
+                </Link>
+              </div>
+            </div>
           </div>
         ) : currentQuestion ? (
           /* Show current question */

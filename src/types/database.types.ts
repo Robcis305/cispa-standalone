@@ -481,6 +481,18 @@ export type Report = Database['public']['Tables']['reports']['Row']
 export type Investor = Database['public']['Tables']['investors']['Row']
 export type User = Database['public']['Tables']['users']['Row']
 
+export interface CompanyProfile {
+  company_name: string
+  industry: string | null
+  annual_revenue: number | null
+  funding_amount_sought: number | null
+  investment_type: 'control' | 'minority' | 'either' | null
+  company_stage: 'pre_seed' | 'seed' | 'series_a' | 'series_b' | 'series_c' | 'growth' | 'late_stage' | null
+  geographic_location: string | null
+  growth_rate: number | null
+  business_model: 'b2b_saas' | 'b2c' | 'marketplace' | 'hardware' | 'biotech' | 'fintech' | 'other' | null
+}
+
 export interface QuestionOption {
   value: string
   label: string

@@ -473,7 +473,11 @@ export default function AssessmentResultsPage() {
                 className="flex items-center text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Back to Assessment
+                Back to Assessment Overview
+              </Link>
+              <div className="h-6 border-l border-gray-300" />
+              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
+                Dashboard
               </Link>
               <div className="h-6 border-l border-gray-300" />
               <Link href="/dashboard" className="flex items-center">

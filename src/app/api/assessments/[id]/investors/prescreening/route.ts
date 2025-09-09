@@ -79,12 +79,12 @@ function hasCompanyProfileData(companyProfile: any): boolean {
   return !!(
     companyProfile &&
     companyProfile.industry &&
-    companyProfile.annualRevenue !== null &&
-    companyProfile.fundingAmountSought !== null &&
-    companyProfile.investmentType &&
-    companyProfile.companyStage &&
-    companyProfile.geographicLocation &&
-    companyProfile.businessModel
+    companyProfile.annual_revenue !== null &&
+    companyProfile.funding_amount_sought !== null &&
+    companyProfile.investment_type &&
+    companyProfile.company_stage &&
+    companyProfile.geographic_location &&
+    companyProfile.business_model
   )
 }
 
@@ -102,8 +102,8 @@ function calculatePrescreeningScore(companyProfile: any, investor: Investor): nu
 
   // Investment amount match (25 points)
   maxScore += 25
-  if (companyProfile.fundingAmountSought && investor.investment_range_min && investor.investment_range_max) {
-    const fundingAmount = companyProfile.fundingAmountSought
+  if (companyProfile.funding_amount_sought && investor.investment_range_min && investor.investment_range_max) {
+    const fundingAmount = companyProfile.funding_amount_sought
     const minRange = investor.investment_range_min
     const maxRange = investor.investment_range_max
     
@@ -118,58 +118,58 @@ function calculatePrescreeningScore(companyProfile: any, investor: Investor): nu
 
   // Company stage match (20 points)
   maxScore += 20
-  if (companyProfile.companyStage && investor.focus_areas?.length) {
+  if (companyProfile.company_stage && investor.focus_areas?.length) {
     // Simple stage matching for now
-    if (investor.focus_areas.includes(companyProfile.companyStage)) {
+    if (investor.focus_areas.includes(companyProfile.company_stage)) {
       score += 20
     }
   }
 
   // Investment type match (15 points)
   maxScore += 15
-  if (companyProfile.investmentType) {
+  if (companyProfile.investment_type) {
     // Assume most investors are flexible with investment type
     score += 10 // Default partial score
   }
 
   // Business model match (15 points)
   maxScore += 15
-  if (companyProfile.businessModel && investor.focus_areas?.length) {
-    if (investor.focus_areas.includes(companyProfile.businessModel)) {
+  if (companyProfile.business_model && investor.focus_areas?.length) {
+    if (investor.focus_areas.includes(companyProfile.business_model)) {
       score += 15
     }
   }
 
   // Revenue range match (10 points)
   maxScore += 10
-  if (companyProfile.annualRevenue) {
+  if (companyProfile.annual_revenue) {
     // Simple revenue scoring - higher revenue generally better
-    if (companyProfile.annualRevenue > 1000000) {
+    if (companyProfile.annual_revenue > 1000000) {
       score += 10
-    } else if (companyProfile.annualRevenue > 100000) {
+    } else if (companyProfile.annual_revenue > 100000) {
       score += 6
     }
   }
 
   // Growth rate match (10 points)  
   maxScore += 10
-  if (companyProfile.growthRate) {
-    if (companyProfile.growthRate >= 50) {
+  if (companyProfile.growth_rate) {
+    if (companyProfile.growth_rate >= 50) {
       score += 10
-    } else if (companyProfile.growthRate >= 20) {
+    } else if (companyProfile.growth_rate >= 20) {
       score += 6
-    } else if (companyProfile.growthRate >= 10) {
+    } else if (companyProfile.growth_rate >= 10) {
       score += 3
     }
   }
 
   // Geographic match (5 points)
   maxScore += 5
-  if (companyProfile.geographicLocation && investor.geographic_focus?.length) {
+  if (companyProfile.geographic_location && investor.geographic_focus?.length) {
     // Check if investor has geographic focus that matches or includes "global"
     if (investor.geographic_focus.includes('global') || 
         investor.geographic_focus.some(geo => 
-          companyProfile.geographicLocation?.toLowerCase().includes(geo.toLowerCase())
+          companyProfile.geographic_location?.toLowerCase().includes(geo.toLowerCase())
         )) {
       score += 5
     }
@@ -188,8 +188,8 @@ function generatePrescreeningReasons(companyProfile: any, investor: Investor): s
   }
 
   // Investment amount alignment
-  if (companyProfile.fundingAmountSought && investor.investment_range_min && investor.investment_range_max) {
-    const fundingAmount = companyProfile.fundingAmountSought
+  if (companyProfile.funding_amount_sought && investor.investment_range_min && investor.investment_range_max) {
+    const fundingAmount = companyProfile.funding_amount_sought
     const minRange = investor.investment_range_min
     const maxRange = investor.investment_range_max
     
@@ -199,32 +199,32 @@ function generatePrescreeningReasons(companyProfile: any, investor: Investor): s
   }
 
   // Stage alignment
-  if (companyProfile.companyStage) {
-    reasons.push(`Company stage alignment: ${companyProfile.companyStage.replace('_', ' ')}`)
+  if (companyProfile.company_stage) {
+    reasons.push(`Company stage alignment: ${companyProfile.company_stage.replace('_', ' ')}`)
   }
 
   // Investment type alignment
-  if (companyProfile.investmentType) {
-    reasons.push(`Investment type preference: ${companyProfile.investmentType}`)
+  if (companyProfile.investment_type) {
+    reasons.push(`Investment type preference: ${companyProfile.investment_type}`)
   }
 
   // Business model alignment
-  if (companyProfile.businessModel && investor.focus_areas?.includes(companyProfile.businessModel)) {
-    reasons.push(`Business model focus: ${companyProfile.businessModel.replace('_', ' ')}`)
+  if (companyProfile.business_model && investor.focus_areas?.includes(companyProfile.business_model)) {
+    reasons.push(`Business model focus: ${companyProfile.business_model.replace('_', ' ')}`)
   }
 
   // Revenue alignment
-  if (companyProfile.annualRevenue && companyProfile.annualRevenue > 1000000) {
-    reasons.push(`Strong revenue profile: ${formatAmount(companyProfile.annualRevenue)} annual revenue`)
+  if (companyProfile.annual_revenue && companyProfile.annual_revenue > 1000000) {
+    reasons.push(`Strong revenue profile: ${formatAmount(companyProfile.annual_revenue)} annual revenue`)
   }
 
   // Growth rate alignment
-  if (companyProfile.growthRate && companyProfile.growthRate >= 20) {
-    reasons.push(`Strong growth trajectory: ${companyProfile.growthRate}% growth rate`)
+  if (companyProfile.growth_rate && companyProfile.growth_rate >= 20) {
+    reasons.push(`Strong growth trajectory: ${companyProfile.growth_rate}% growth rate`)
   }
 
   // Geographic alignment
-  if (companyProfile.geographicLocation && investor.geographic_focus?.includes('global')) {
+  if (companyProfile.geographic_location && investor.geographic_focus?.includes('global')) {
     reasons.push('Global investment focus covers your location')
   }
 

@@ -278,11 +278,11 @@ export default function EditAssessmentPage() {
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
-                href={`/dashboard/assessments/${assessmentId}/results`}
+                href={`/dashboard/assessments/${assessmentId}`}
                 className="flex items-center text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Back to Results
+                Back to Assessment Overview
               </Link>
               <div className="h-6 border-l border-gray-300" />
               <Link href="/dashboard" className="flex items-center">

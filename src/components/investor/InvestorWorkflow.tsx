@@ -64,12 +64,34 @@ export default function InvestorWorkflow({
     setError(null)
 
     try {
-      // Get company profile from localStorage (temporary solution until database schema is updated)
-      const companyProfileData = localStorage.getItem(`companyProfile_${assessmentId}`)
-      let companyProfile = null
+      // Get company profile from the database
+      const assessmentResponse = await fetch(`/api/assessments/${assessmentId}`)
+      if (!assessmentResponse.ok) {
+        throw new Error('Failed to load assessment data')
+      }
       
-      if (companyProfileData) {
-        companyProfile = JSON.parse(companyProfileData)
+      const assessmentData = await assessmentResponse.json()
+      const assessment = assessmentData.assessment
+      
+      // Extract company profile from assessment data
+      const companyProfile = {
+        company_name: assessment.company_name,
+        industry: assessment.industry,
+        annual_revenue: assessment.annual_revenue,
+        funding_amount_sought: assessment.funding_amount_sought,
+        investment_type: assessment.investment_type,
+        company_stage: assessment.company_stage,
+        geographic_location: assessment.geographic_location,
+        growth_rate: assessment.growth_rate,
+        business_model: assessment.business_model
+      }
+
+      // Validate that we have the required company profile data
+      const requiredFields = ['industry', 'annual_revenue', 'funding_amount_sought', 'investment_type', 'company_stage', 'business_model']
+      const missingFields = requiredFields.filter(field => !companyProfile[field as keyof typeof companyProfile])
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Company profile is incomplete. Please go back to the assessment settings and fill out the following required fields: ${missingFields.join(', ').replace(/_/g, ' ')}.`)
       }
 
       const response = await fetch(`/api/assessments/${assessmentId}/investors/prescreening`, {
@@ -82,6 +104,12 @@ export default function InvestorWorkflow({
       
       if (!response.ok) {
         const errorData = await response.json()
+        
+        // If it's a company profile validation error, provide more helpful guidance
+        if (response.status === 400 && errorData.error?.includes('Company profile data is required')) {
+          throw new Error('Company profile is incomplete. Please go back to the assessment settings and ensure all required fields are filled out: Industry, Annual Revenue, Funding Amount Sought, Investment Type, Company Stage, Geographic Location, and Business Model.')
+        }
+        
         throw new Error(errorData.error || 'Pre-screening failed')
       }
 
